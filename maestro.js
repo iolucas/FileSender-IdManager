@@ -32,7 +32,8 @@ var express = require("express");   //get express module
 var http  = require("http");    //get http module
 var cfenv = require("cfenv");   //get cloud foundry enviroment module
 var ws = require("ws"); //get the websocket module
-var MaestroSocket = require("./MaestroSocket");  //Import MaestroSocket class from MaestroSocket.js
+var Wocket = require("../Wocket/Wocket");  //Import MaestroSocket class from MaestroSocket.js
+var Misc = require("./MiscFunctions");  //Import MiscFunctions class from MiscFunctions.js
 
 var app = express();    //inits the express application
 
@@ -45,7 +46,7 @@ var httpServer = http.createServer(app);
 
 // start the server on the calculated port and host
 httpServer.listen(appEnv.port, function() {
-    console.log("Maestro starting on " + appEnv.url)
+    log("Maestro starting on " + appEnv.url)
 });
 
 app.get("/", function(req, res) {   //respond the request for server/maestrostatus
@@ -53,13 +54,13 @@ app.get("/", function(req, res) {   //respond the request for server/maestrostat
 });
 
 app.get("/status", function(req, res) {   //respond the request for server/maestrostatus
-    res.send("status"); //for while respond with status word       
+    res.send("Status"); //for while respond with status word       
 });
 
 var wsServer = new ws.Server({ server: httpServer });   //'promotes' the httpserver to a websocket server
 
 wsServer.on("error", function(error) {  //instance to handle websocket server errors
-    console.log("Error while operating WebSocketServer: " + error);    
+    log("Error while operating WebSocketServer: " + error);    
 });
 
 
@@ -72,12 +73,29 @@ var sessions = [];  //array to store session objects
 
 wsServer.on("connection", function(wSocket) {   //websocket connection event handler
     
-    var client = new MaestroSocket(wSocket);
+    var client = new Wocket(wSocket);
     
     var connId = "";
     var username = "";
     
     log("New connection.");
+    
+    client.on("Oi", function() {
+        log("oii");    
+        
+    });
+    
+    client.on("lucaS", function(text) {
+        log(text);  
+        if(text == "close")
+            client.close();
+        
+    });
+    
+    client.on("echo", function(text) {
+        client.emit("echo", text);
+        
+    });
     
     client.on("error", function(error) {   //instance to handle websocket errors
         log("Error while dealing new websocket: " + error);       
@@ -230,27 +248,9 @@ function lengthOf(obj) {
     return c;
 }
 
-function getId(size)
-{
-    var text = "";
-    var possible = "abcdefghijklmnopqrstuvwxyz0123456789";
 
-    for( var i=0; i < size; i++ )
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
 
-    return text;
-}
 
-function getNumber(size)
-{
-    var text = "";
-    var possible = "0123456789";
-
-    for( var i=0; i < size; i++ )
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-    return text;
-}
 
 
 function getWordId()
@@ -280,8 +280,7 @@ function getWordId()
 
     
 function log(string){   //wrap for log info into the console
-    cTime = new Date();
-    console.log(cTime.getHours() + ":" + cTime.getMinutes() + ":" + cTime.getSeconds() + "\t" + string);
+    console.log(Misc.GetTimeStamp() + " " + string);
 }
 
 
