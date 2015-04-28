@@ -28,78 +28,90 @@ if want to join, server will verify whether session id exists, if so, it will
 
 //Init main modules
 
-var express = require("express");   //get express module
-var http  = require("http");    //get http module
-var cfenv = require("cfenv");   //get cloud foundry enviroment module
-var ws = require("ws"); //get the websocket module
-var Wocket = require("../Wocket/Wocket");  //Import MaestroSocket class from MaestroSocket.js
-var Misc = require("./MiscFunctions");  //Import MiscFunctions class from MiscFunctions.js
+var express = require("express"),   //get express module
+    http  = require("http"),    //get http module
+    cfenv = require("cfenv"),   //get cloud foundry enviroment module
+    ws = require("ws"), //get the websocket module
+    fs = require("fs"), //get the filesystem module
+    Wocket = require("../Wocket/Wocket"),  //Import MaestroSocket class from MaestroSocket.js
+    Misc = require("./MiscFunctions"),  //Import MiscFunctions class from MiscFunctions.js
 
-var app = express();    //inits the express application
+    app = express(),    //inits the express application
 
 // get environmental information for this app
-var appEnv   = cfenv.getAppEnv();
-var instance = appEnv.app.instance_index || 0;
+    appEnv   = cfenv.getAppEnv(),
 
 // create a server with a simple request handler
-var httpServer = http.createServer(app);
+    httpServer = http.createServer(app),
+    
+//'promotes' the httpserver to a websocket server
+    wsServer = new ws.Server({ server: httpServer });   
 
 // start the server on the calculated port and host
 httpServer.listen(appEnv.port, function() {
-    log("Maestro starting on " + appEnv.url)
+    log("Maestro starting on " + appEnv.url);
 });
 
-app.get("/", function(req, res) {   //respond the request for server/maestrostatus
+//serve files at public directory
+app.use(express.static("public"));  
+
+/*app.get("/", function(req, res) {   //respond the request for index.html
     res.send("OK"); //for while respond with status word       
-});
+});*/
 
-app.get("/status", function(req, res) {   //respond the request for server/maestrostatus
-    res.send("Status"); //for while respond with status word       
-});
+/*app.get("/*", function(req, res) {   //respond the request for server/maestrostatus
+    res.send(req.body); //for while respond with status word
+    console.log(req.body);
+});*/
 
-var wsServer = new ws.Server({ server: httpServer });   //'promotes' the httpserver to a websocket server
 
 wsServer.on("error", function(error) {  //instance to handle websocket server errors
     log("Error while operating WebSocketServer: " + error);    
 });
-
 
 //--------------------------------------- SETUP MADE, NOW WHAT REALLY MATTERS :) -----------------------------------------------
 
 
 var connections = [];   //array to store connection objects
 
-var sessions = [];  //array to store session objects
+//var sessions = [];  //array to store session objects
 
 wsServer.on("connection", function(wSocket) {   //websocket connection event handler
     
-    var client = new Wocket(wSocket);
+    var client = new Wocket(wSocket);   //inits wocket instance with the just connected websocket
+    
+    client.on("idRequest", function() {
+        
+        
+        
+    });
+    
+    
+    
+    
+    
+    
+    client.on("error", function(error) {   //instance to handle websocket errors
+        log("Error while dealing new websocket: " + error);       
+    });
+    
+    client.on("getIp", function() {
+        client.emit("ip", wSocket.upgradeReq.connection.remoteAddress);   
+        log("IPReq: " + wSocket.upgradeReq.connection.remoteAddress);
+        
+    });
+    
+    
+    
+    
     
     var connId = "";
     var username = "";
     
     log("New connection.");
     
-    client.on("Oi", function() {
-        log("oii");    
-        
-    });
     
-    client.on("lucaS", function(text) {
-        log(text);  
-        if(text == "close")
-            client.close();
-        
-    });
-    
-    client.on("echo", function(text) {
-        client.emit("echo", text);
-        
-    });
-    
-    client.on("error", function(error) {   //instance to handle websocket errors
-        log("Error while dealing new websocket: " + error);       
-    });
+
 
     client.on("close", function(code, message) {   //instance to handle websocket errors
         //verify if an object has been created for this instance
