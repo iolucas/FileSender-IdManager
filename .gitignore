@@ -45,3 +45,5 @@ node_modules/
 server.js
 testPage.html
 public/
+words.txt
+wordList.js
