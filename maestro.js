@@ -1,30 +1,5 @@
-/*  ----------- TODO LIST ----------------//
+//--------------------MAESTRO--------------------//
 
--   If some id stays too much time without a session, its connection will be closed
--   Create system to store recently used connection ids to prevent them to be used
--   Before request session, connection wont have an id
--	Verify which point it tried to send data to not connected socket that are making the server to crash
--   Create system to keep negotiating accessKeys to be used to request the same conn id in case server crashs or any other error
-
-//  -------------------------------------*/
-
-/*  ----------- Updates V1.5 ----------------//
-
--   Changed socket.io for a simpler api to handle websockets to reduce download resources
-
-//  -------------------------------------*/
-
-
-/* got to create a array of connected clients to manage them
-clients which connect in the beggining wont receive their own id
-and then ask to join or create session
-
-if want to create, server will create a new session instance and respond with its id 
-
-if want to join, server will verify whether session id exists, if so, it will
-
-
-*/
 
 //Init main modules
 
@@ -32,10 +7,11 @@ var express = require("express"),   //get express module
     http  = require("http"),    //get http module
     cfenv = require("cfenv"),   //get cloud foundry enviroment module
     ws = require("ws"), //get the websocket module
-    fs = require("fs"), //get the filesystem module
+    //(MAYBE THIS WILL NOT BE NEED) fs = require("fs"), //get the filesystem module
     Wocket = require("../Wocket/Wocket"),  //Import MaestroSocket class from MaestroSocket.js
     Misc = require("./MiscFunctions"),  //Import MiscFunctions class from MiscFunctions.js
-
+    wordList = require("./wordList");    
+    
     app = express(),    //inits the express application
 
 // get environmental information for this app
@@ -45,7 +21,7 @@ var express = require("express"),   //get express module
     httpServer = http.createServer(app),
     
 //'promotes' the httpserver to a websocket server
-    wsServer = new ws.Server({ server: httpServer });   
+    wsServer = new ws.Server({ server: httpServer }); 
 
 // start the server on the calculated port and host
 httpServer.listen(appEnv.port, function() {
@@ -55,15 +31,16 @@ httpServer.listen(appEnv.port, function() {
 //serve files at public directory
 app.use(express.static("public"));  
 
-/*app.get("/", function(req, res) {   //respond the request for index.html
-    res.send("OK"); //for while respond with status word       
-});*/
+app.get("/", function(req, res) {   //respond the request for index.html
+    //Create session id at main HTTP get
+    var newSession = createSession();
+    log("New session created: " + newSession);
+    res.redirect(newSession);   
+});
 
-/*app.get("/*", function(req, res) {   //respond the request for server/maestrostatus
-    res.send(req.body); //for while respond with status word
-    console.log(req.body);
-});*/
-
+app.get("/*", function(req, res) {   //respond the request for server/maestrostatus
+    res.sendFile(__dirname + "/public/session.html");
+});
 
 wsServer.on("error", function(error) {  //instance to handle websocket server errors
     log("Error while operating WebSocketServer: " + error);    
@@ -74,14 +51,14 @@ wsServer.on("error", function(error) {  //instance to handle websocket server er
 
 var connections = [];   //array to store connection objects
 
-//var sessions = [];  //array to store session objects
+var sessions = [];  //array to store session objects
 
 wsServer.on("connection", function(wSocket) {   //websocket connection event handler
     
     var client = new Wocket(wSocket);   //inits wocket instance with the just connected websocket
     
     client.on("idRequest", function() {
-        
+            
         
         
     });
@@ -275,7 +252,7 @@ function getWordId()
     if(Math.random() > 0.5)
         numberFirst = true;
     
-    var numberId = getNumber(3);
+    var numberId = Misc.GetNumId(3);
     
     var wIndex = (Math.random() * wordList.length).toFixed(0);  //got to fix 0 decimal places to use an index
     var wordId = wordList[wIndex];  
