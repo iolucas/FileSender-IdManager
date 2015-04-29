@@ -34,6 +34,7 @@ function Misc() {
     //Return a text with the current timestamp
     this.GetTimeStamp = function() {
         var cTime = new Date();
-            return cTime.getHours() + ":" + cTime.getMinutes() + ":" + cTime.getSeconds();          
+            //return (cTime.getHours()>=10?cTime.getHours():"0"+cTime.getHours()) + ":" + cTime.getMinutes() + ":" + cTime.getSeconds();
+        return (cTime.getHours()>=10?cTime.getHours():"0"+cTime.getHours()) + ":" + (cTime.getMinutes()>=10?cTime.getMinutes():"0"+cTime.getMinutes()) + ":" + (cTime.getSeconds()>=10?cTime.getSeconds():"0"+cTime.getSeconds());   
     }
 }
