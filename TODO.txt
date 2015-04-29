@@ -1,0 +1,119 @@
+NEXT TODO:
+
+-   Use MongoDB (or other db) to handle session and connections ids
+
+GENERAL TODO:
+
+-   Follow and participate bluemix, nodejs and webrtc events to talk about qeekme
+-   Once you improve it, talk to developers and tecnology sites about it
+-   Only after fix all issues with the current implementation we will think in next
+
+SERVER TODO:
+
+-   At session join request, client will send its username, return the connection
+-   Check someway for have a public id and private id for security issues for client id
+-   Create system to store recently used connection ids to prevent them to be used
+-	Verify which point it tried to send data to not connected socket that are making the server to crash
+-   Create system to keep negotiating accessKeys to be used to request the same conn id in case server crashs or any other error
+-   got to create a array of connected clients to manage them 
+-   Use english and portugueses words as address
+-   Maybe put qeek.me servers in more than one cloud
+
+CLIENT TODO:
+
+----- NOW PRIORITIES  -----
+
+-   Fix bug of in case download file connection made, the download didn't start(align with the upper request)
+-   Check bug of sometimes server room got stuck and dont elect new host and dont accepet nor refuse new members(server crashing due trying to send socket data to offline peer)
+-   Fix the error of exceeded quota (that means that chrome is not disposing the local storage temp files, must do this manually and files up to 5mb for example, should not use the local storage)
+-   Change the very first page due to small icons for recent sites in browsers be nice
+-   Put google search keywords
+-   Verify if is posible create app with current state of code
+
+
+----- AFTER PRIORITIES  ----
+
+--future---
+App will have location of nearest server that would be updated constantly
+Every server would have a bank of page codes that would be updated constantly
+would have a concurrence system that low performance contributors would be put in check for another one
+Modelo "filial" qeek.me, para atingit global e sempre ter um server perto de voce ou para servir de turn ou vender qeek.me adapter q vai ser um pic para servir de servidor p qeekme verificar como modelo de roteamento funciona pelos isp's
+-   Create system of a "online" stream that will act has a turn server to pass data on for non supported qeek.me devices
+-------
+
+
+-   Integrate with android system to create a "Transfer with Qeek.me" menu
+-   Put welcome screen in qeek.me, create english and portuguese pages now!
+-   The first time someone enter on the page, an about page will prompt describing it, and a dont show me again box will appear as well
+-   Put and @sessionid on the top and when the user click on it, it will put the qeek.me/sessionid in the transfer area
+-   Finish the signaling and sessions address holders
+-   Check if is necessary to change the way the websockets exchange info
+-   When put a file on the screen, if you click once on it, it will give details like who is downloading etc, and once someone starts download will prompt a message in the screen "john started download it"
+-   When downloading file the file owner will view a bar for each downloading peer with the name of who is downloading with the name following the end of the bar, like a car race
+-   Advertises while loading
+-   In the upper screen, will be shown the number of connected clients
+-   In the app, will have a similar address bar but with "qeek.me/" fixed and you will be able to write folder name only
+-   Verify the RTC protocols each browser uses and check the needs of set protocols contraints like fire fox protocol is by default unreliable
+-   For a while test qeek.me with holding files into the memory
+-   Test unreliable transfer to see if it matches with hack to accelerate
+-   Test unordered unreliable transfer
+-   Use the host rtc connection to negotiate new connections
+-   Put message for the user do not close the page until the download is finish
+-   View about bootstrap, how heavy is it to get the website resposive; if so heavy, create your own way to do this
+-   Enhance RTC Conn Framework with the on and emit stuff
+-   Check the add candidate callbacks needs (alert on fire fox)
+-   The same for setRemoteDesc and setLocalDesc
+-   Implement alert interface messages with timeout to show and disapear the alert in the upper screen
+-   Create menu for about stuff, change name etc
+-   Implement better screen for the desktop site
+-   implement title to the menu icons (like message and get the file) of qeek(verify if this is really need)
+-   In the final version don't show the status connecting, joinning, etc
+-   Must check whether the browser is chrome last version and firefox last version... if not, block initialization(maybe use this cause individual api detection works better)
+-   Implement system to limit download size in case no db system is not available due to it will be placed in the ram
+-   once the user connects, prompt it in the msg space
+-   Study whether is better to every connected client make it rtc connect to all clients in the room
+-   Verify whether the host always accepts or requests connections to remove unnecessary jncode messages like you are the host etc
+-   In the chat screen, put some icons with the username of people with the section active, like keywords icons (host must alert every new user connected and disconnected
+-   If a download has already been started or completed, it wont disappear if the owner closes it, it will have a msg of owner closed the file or has been disconnected
+-   Implement mode to local file inform when it is being downloaded
+-   Must implement mode to cancel on progress download or stop it to continue later
+-   Implement logic to avoid allowance of same file being downloaded in parallel (to be understood)
+-   Improve system to verify whether is something active (session, download) and alert in case user attempt to exit the page
+-   Implement system in case private mode is used on fire fox(must verify if private on chrome affects the file system api) limit download size cause it will be store in the memory
+-   Implement system to download one file per time per connection not only one download per time for all connections
+-   Check how to implement reconnection in case of connection lost (WILL BE MADE IN THE ABOVE IMPLEMENTATION)
+-   Must implement mode to disconnect from server (is need in some cases, must remember which ones)
+-   Advertise based on engineering stuff, calculating time and getting to the result that for small files, qeek me is your best option
+-   Implement dynamic amount of chunks per packet and maybe dynamic chunk size due to network dynamic changes
+-   Check what is chrome app to implement this system
+-   Implement smart mode to elect new host in case host disconnect or have a bad perfomance
+-   Must implement system to local files get download requests list to be accepted to cancel if needed and get statistics
+-   Implement system in case of rtc connection falls or a timeout expire without data chunk, cancel the download
+-   Must verify enhancements in the rtc connections
+-   Implement system to calculate receiving data rate ,uploding and estimate download finalization
+-   Implement system to accept refuse or cancel download
+-   use all functions that return operation result values to detect errors
+-   In case page is closed, got to register all opened sandbox file system to close them
+-   Verify if the local files beeing loaded at filesystem improve the system performance
+-   maybe chunks per ack when connecting to a celphone may be changed
+-   Implement system that in case of images, change the icon to the miniature
+-   Check if a sandbox file already exists for this file, if so, keep wrinting on it where it stopped
+-   To verify if it is the same file, randomly read some parts of it and see if it matches
+-   Got to improve "message received recognizement"
+-   Put different colors for qeek.me chat in different users, in the future implement talk ballons
+-   got to improve username receive to avoid accept a lot of spaces as chars
+-   Must have a timeout system to send chunks request in case some of them didnt arrive
+-   Request will be made every 16 chunks received
+-   if timeout expire, will request all the left chunks from the previous 16 chunks packet request
+-   Create rtcconnections event as emit and on modes
+-   Improve delete system, when one file is selected by holding, the other ones are selected with one click, and one click is enough to deselect any of them
+-   Take out the cursor pointer in mobile apps due to mouse pointer is not present
+-   Put advertise as icons in qeek.me
+
+
+NOT TO DO:
+
+-   Make app that will be in background, once you open qeek.me in the same network and drop the files on the celphone it will alert on phone and start receiving it, and in the future the user may register an account to have a permanent page
+-   Its better not implement sharepoint way due to the way you want qeek.me work, placing a file and wherever who got the session download it, not throwing file direct
+-   put something similar do sharedrop to recognize same network devices
+-   put a sign in system to recognize by avatar or request user to select an avatar image from the pre loaded at the first time and select whether it is a phone, tablet pc etc to be recognized
