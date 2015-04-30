@@ -22,10 +22,10 @@ function Misc() {
         for( var i=0; i < size; i++ )
             text += possible.charAt(Math.floor(Math.random() * possible.length));
         return text;
-    }  ; 
+    }; 
     
     //Generate Random Alphabetic Id with the desired size
-    this.GetAlphaNumId = function(size) {   
+    this.GetAlphaId = function(size) {   
         var text = "";
         var possible = "abcdefghijklmnopqrstuvwxyz";
         for( var i=0; i < size; i++ )
