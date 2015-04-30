@@ -4,12 +4,18 @@ NEXT TODO:
 
 GENERAL TODO:
 
+-   If we use more than 1 instances of maestro, if someone connects ws to one of them, won't be able to talk to the other in the other instance
+-   Create system in case server crash, retrieve connections in the best way in a mode that the user do not feel
 -   Follow and participate bluemix, nodejs and webrtc events to talk about qeekme
 -   Once you improve it, talk to developers and tecnology sites about it
 -   Only after fix all issues with the current implementation we will think in next
 
 SERVER TODO:
 
+-   If server crashes, for now, only clear session members
+-   Set timeout to answer error if took too long to get and address
+-   Every period, a "session garbage collector" will act to kill sessions not active for at least 1 day
+-   Sessions become not active after the last user disconnects
 -   Verify whether there is chance of two connections got the same id due to enter in the same in the db
 -   If try to use a not implemented session id, return and error page instead try to connect
 -   At session join request, client will send its username, return the connection
@@ -25,6 +31,7 @@ CLIENT TODO:
 
 ----- NOW PRIORITIES  -----
 
+-   Create error page to be sent in case Id not exist
 -   Fix bug of in case download file connection made, the download didn't start(align with the upper request)
 -   Check bug of sometimes server room got stuck and dont elect new host and dont accepet nor refuse new members(server crashing due trying to send socket data to offline peer)
 -   Fix the error of exceeded quota (that means that chrome is not disposing the local storage temp files, must do this manually and files up to 5mb for example, should not use the local storage)
@@ -43,6 +50,8 @@ Modelo "filial" qeek.me, para atingit global e sempre ter um server perto de voc
 -   Create system of a "online" stream that will act has a turn server to pass data on for non supported qeek.me devices
 -------
 
+-   Change msg ico to qeek.me logo fullfiled
+-   generate timeout in case joinSession is not send by connected client, disconnect it
 -   Ensure https by verifiyng if the user typed https if not, redirect it to https
 -   Integrate with android system to create a "Transfer with Qeek.me" menu
 -   Put welcome screen in qeek.me, create english and portuguese pages now!
