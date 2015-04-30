@@ -1,57 +1,98 @@
 //--------------------MAESTRO--------------------//
 
-
-//Init main modules
-
-var express = require("express"),   //get express module
+//GET ALL EXTERNAL MODULES
+var cfenv = require("cfenv"),   //get cloud foundry enviroment module
     http  = require("http"),    //get http module
-    cfenv = require("cfenv"),   //get cloud foundry enviroment module
     ws = require("ws"), //get the websocket module
-    //(MAYBE THIS WILL NOT BE NEED) fs = require("fs"), //get the filesystem module
-    Wocket = require("../Wocket/Wocket"),  //Import MaestroSocket class from MaestroSocket.js
-    Misc = require("./MiscFunctions"),  //Import MiscFunctions class from MiscFunctions.js
-    wordList = require("./wordList");    
-    
+    express = require("express"),   //get express module
+    Wocket = require("../Wocket/Wocket");  //Import MaestroSocket class from MaestroSocket.js
+    IdManager = require("./IdManager"), //get IdManager module
+    Misc = require("./MiscFunctions"),  //Import MiscFunctions class from MiscFunctions.js 
+
+//INIT MODULES
+    appEnv = cfenv.getAppEnv(),   // get environmental information for this app
     app = express(),    //inits the express application
+    httpServer = http.createServer(app),// create a server with a simple request handler
+    wsServer = new ws.Server({ server: httpServer }), //'promotes' the httpserver to a websocket server
+    idManager = new IdManager();  //inits new IdManager instance
 
-// get environmental information for this app
-    appEnv   = cfenv.getAppEnv(),
+//------------------------------------------------------------------------------------//
 
-// create a server with a simple request handler
-    httpServer = http.createServer(app),
-    
-//'promotes' the httpserver to a websocket server
-    wsServer = new ws.Server({ server: httpServer }); 
-
-// start the server on the calculated port and host
-httpServer.listen(appEnv.port, function() {
-    log("Maestro starting on " + appEnv.url);
-});
-
-//serve files at public directory
+//SERVE HTTP FILES IN PUBLIC FOLDERS
 app.use(express.static("public"));  
-
-app.get("/", function(req, res) {   //respond the request for index.html
-    //Create session id at main HTTP get
-    var newSession = createSession();
-    log("New session created: " + newSession);
-    res.redirect(newSession);   
+    
+//CREATE NEW SESSION AND RESPOND GET/ WITH THE SESSION CREATED
+app.get("/", function(req, res) {
+    idManager.CreateSessionId(function(newSessionId) {
+        log("New session created: " + newSessionId);
+        res.redirect(newSessionId);             
+    });
 });
 
-app.get("/*", function(req, res) {   //respond the request for server/maestrostatus
-    res.sendFile(__dirname + "/public/session.html");
+//CHECK IF THE REQUESTED GET/* PATH EXISTS, IF SO, RETURN INDEX, IF NOT, RETURN ERROR     
+app.get("/*", function(req, res) {  
+    //CHECK REQUESTED GET/*
+    if(req.path.indexOf(".") == -1) //verify if the request has no dot, meaning that is session request
+        idManager.GetSessionId(req.path.substr(1), function(error, sessionHandler) {    //verify if the requested if exists
+            if(sessionHandler)  //if session handler is found,
+                res.sendFile(__dirname + "/public/session.html");   //respond session page
+            else    //if not,
+                res.send("Not Found");  //respond with not found
+        });
+    else    //if any dot is found, 
+        res.end();  //finish the response
 });
-
-wsServer.on("error", function(error) {  //instance to handle websocket server errors
+        
+//INSTANCE TO HANDLE ERROR IN WSSERVER
+wsServer.on("error", function(error) {  
     log("Error while operating WebSocketServer: " + error);    
 });
+
+
+
+
+
+//EVERYTHING SET, START DB AND LISTEN HTTP AND WS CONNECTIONS
+log("Initiating Maestro...");
+console.log("");
+log("Initiating IdManager...");
+
+//Starts IdManager
+idManager.Start("mongodb://localhost/test", function(error) { 
+    if(error)
+        throw error.toString();     //if some error while starting idManager, crash application   
+    log("IdManager initiated.");
+    
+    idManager.SessionClear();
+    
+// start the server on the env port
+    log("Starting HTTP and WS Server...");
+    httpServer.listen(appEnv.port, function() {
+        log("HTTP and WS Server initiated.");
+        console.log("");
+        log("Maestro running @ " + appEnv.url);
+    });      
+});  
+    
+
+   
+    
+
+
+
+
+
+
+
 
 //--------------------------------------- SETUP MADE, NOW WHAT REALLY MATTERS :) -----------------------------------------------
 
 
-var connections = [];   //array to store connection objects
+//var connections = [];   //array to store connection objects
 
-var sessions = [];  //array to store session objects
+//var sessions = [];  //array to store session objects
+
+/*
 
 wsServer.on("connection", function(wSocket) {   //websocket connection event handler
     
@@ -120,15 +161,15 @@ wsServer.on("connection", function(wSocket) {   //websocket connection event han
         //get session ref
         connSession = sessionId;
         username = user;
-        /*  Create new connection ID    */
+        //  Create new connection ID    //
         connId = getId(10);    
         while(connections[connId])
         connId = getId(10);        
         connections[connId] = socket;
         log("New client ID: " + username + " " + connId);
-        /*  -------------------------   */
+        //  -------------------------   //
         
-        /*          Join Session        */
+        //          Join Session        //
         sessions[sessionId].members[connId] = socket;
         
         if(sessions[sessionId].hostId == "") {
@@ -193,27 +234,6 @@ wsServer.on("connection", function(wSocket) {   //websocket connection event han
     });
 });
 
-
-
-
-function createSession() {
-    
-    do {
-        var newSessionId = getWordId();       
-    } while(sessions[newSessionId]);
-    
-    /*var newSessionId = getId(5);
-        
-    while(sessions[newSessionId])
-        newSessionId = getId(5);*/
-             
-    sessions[newSessionId] = new Object();
-    sessions[newSessionId].hostId= "";
-    sessions[newSessionId].members = [];
-    
-    return newSessionId;
-}
-
 function electHost(sessionId) {
     //for now, take the first client connected
     //in the future, choose based on statistic like better performance or activity
@@ -226,47 +246,7 @@ function electHost(sessionId) {
     }
     
     
-}
-
-function lengthOf(obj) {
-    var c=0;
-    for(var fieldName in obj)
-    {
-        c++;
-    }
-    return c;
-}
-
-
-
-
-
-
-function getWordId()
-{
-    if(wordList.length == 0)
-        return null;
-    
-    var numberFirst = false;
-    
-    if(Math.random() > 0.5)
-        numberFirst = true;
-    
-    var numberId = Misc.GetNumId(3);
-    
-    var wIndex = (Math.random() * wordList.length).toFixed(0);  //got to fix 0 decimal places to use an index
-    var wordId = wordList[wIndex];  
-    
-    wordId = wordId.substr(0,wordId.length-1);
-    
-    if(numberFirst)
-        return numberId+wordId;
-    else
-        return wordId+numberId; 
-}
-
-
-
+}*/
     
 function log(string){   //wrap for log info into the console
     console.log(Misc.GetTimeStamp() + " " + string);
