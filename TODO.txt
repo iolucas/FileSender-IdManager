@@ -10,6 +10,8 @@ GENERAL TODO:
 
 SERVER TODO:
 
+-   Verify whether there is chance of two connections got the same id due to enter in the same in the db
+-   If try to use a not implemented session id, return and error page instead try to connect
 -   At session join request, client will send its username, return the connection
 -   Check someway for have a public id and private id for security issues for client id
 -   Create system to store recently used connection ids to prevent them to be used
@@ -41,7 +43,7 @@ Modelo "filial" qeek.me, para atingit global e sempre ter um server perto de voc
 -   Create system of a "online" stream that will act has a turn server to pass data on for non supported qeek.me devices
 -------
 
-
+-   Ensure https by verifiyng if the user typed https if not, redirect it to https
 -   Integrate with android system to create a "Transfer with Qeek.me" menu
 -   Put welcome screen in qeek.me, create english and portuguese pages now!
 -   The first time someone enter on the page, an about page will prompt describing it, and a dont show me again box will appear as well
