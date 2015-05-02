@@ -87,54 +87,22 @@ wsServer.on("connection", function(wSocket) {
             
             client.on("PeerData", function(destId, data) {
                 
-                idManager.GetClientHandler(client.SessionId,destId, function(destHandler) {
+                idManager.GetClientHandler(client.SessionId, destId, function(destHandler) {
                 //maybe implement query id in the future
-                    try {
-                        if(sessions[sessionId].members[destId])
-                            sessions[sessionId].members[destId].send(getDataStr({type: "peerData", data: [connId,data]}));
-                        else
-                            socket.send(getDataStr({type: "peerDataError", data: [destId,data]}));
-                    } catch (error) {}  
+                    if(destHandler)
+                        destHandler.emit("PeerData", client.ConnectionId, data);    
+                    else
+                        client.emit("PeerDataError", destId, data);
                 });              
             });
             
-            client.on("close", function() {
-            
-                if(sessions[sessionId].members[connId])
-                    delete sessions[sessionId].members[connId];
-
-                if(connections[connId])
-                    delete connections[connId];
-            
-                log("Client " + connId + " disconnected.");
-                log("Session members: " + lengthOf(sessions[sessionId].members));
-                if(lengthOf(sessions[sessionId].members) == 0) {
-                    log("Deleting empty session.");
-                    delete sessions[sessionId];          
-                }
-                else if(sessions[sessionId].hostId == connId) {  //so you were the host, need to get a new
-            
-                    log("Host has disconnected. Electing new host...");    
-                    var newHostId = electHost(sessionId);  
-                    log("ID: " + newHostId + " is now the new host.");
-            
-                    log("Informing session members...");
-                    log(lengthOf(sessions[sessionId].members));
-                    for(memberId in sessions[sessionId].members) {
-                    if(sessions[sessionId].hostId != memberId)
-                        sessions[sessionId].members[memberId].send(getDataStr({type: "newHost", data: [newHostId]}));
+            client.on("close", function() {              
+                idManager.ClearClientId(client.SessionId, client.ConnectionId, function(result) {
+                    if(result)
+                        log("Client " + client.ConnectionId + " disconnected.");
                     else
-                        sessions[sessionId].members[memberId].send(getDataStr({type: "newHost", data: [""]}));
-                    }
-            
-                    log("All sessions has been informed.");
-
-                    log("Informing host socket is closed");
-                    sessions[sessionId].members[sessions[sessionId].hostId].send(getDataStr({type: "peerClosure", data: [connId]}));
-                } else {
-                    log("Informing peers socket is closed");
-                    sessions[sessionId].members[sessions[sessionId].hostId].send(getDataStr({type: "peerClosure", data: [connId]}));
-                }
+                        log("Error while disconnecting " + client.ConnectionId + ".");
+                });
             });
             
             /*FOR WHAT IS THIS?!?!?
@@ -177,18 +145,7 @@ idManager.Start("mongodb://localhost/test", function(error) {
 //-------------------   Miscelaneous Functions    -------------------//
 
 
-function electHost(sessionId) {
-    //for now, take the first client connected
-    //in the future, choose based on statistic like better performance or activity
-    
-    for(memberId in sessions[sessionId].members){
-        log("the first member is :" + memberId);
-        sessions[sessionId].hostId = memberId;
-        log("THE NEW HOST ISSS" + sessions[sessionId].hostId);
-        return memberId;
-    }
 
-}
     
 function log(string){   //wrap for log info into the console
     console.log(Misc.GetTimeStamp() + " " + string);
