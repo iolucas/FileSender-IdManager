@@ -4,7 +4,8 @@
 
 module.exports = IdManager;
 
-var wordList = require("./wordList");   //get wordlist module
+var wordList = require("./wordList"),   //get wordlist module
+    Misc = require("./MiscFunctions");  //Import MiscFunctions class from MiscFunctions.js 
 
 function IdManager() {
     
@@ -105,6 +106,64 @@ function IdManager() {
             }  else  //if everithing goes good, 
                 callback(session.Members[clientId]);    //get the clientid handler
         });  
+    };
+    
+    this.ClearClientId = function(sessionId, clientId, callback) {
+        Sessions.findOne({ SessionId: sessionId, }, function(error, session) {
+            //if no error while getting session and the clientId is in this session,
+            if(!error && session && session.Members[clientId]) {
+                delete session.Members[clientId];   //delete the clientId from the session members
+            
+                if(Misc.LengthOf(session.Members) == 0) {   //if the session is empty, delete it                   
+                    session.remove(error, function() {
+                        console.log("Session " + sessionId + " is empty. Deleted.");
+                    });
+                } else if(session.HostId == clientId) {  //if the session is not empty and this connection were the host, need to get a new one
+                    console.log("Host has disconnected. Electing new host...");    
+                        
+                    //ELECT NEW HOST
+                    
+                    //for now, take the first client connected
+                    //in the future, choose based on statistic like better performance or activity
+    
+                    for(member in session.Members) {
+                        console.log("The first member is :" + member.ConnectionId);
+                        session.HostId = member.ConnectionId;
+                        console.log("The new host is: " + session.HostId);
+                        break;
+                    }
+
+                    var newHostId = session.HostId;  
+                        console.log("ID: " + newHostId + " is now the new host.");
+            
+                        console.log("Informing session members...");
+                        console.log(Misc.LengthOf(session.Members));
+                    
+                        for(member in session.Members) {
+                            if(session.HostId != member.ConnectionId)
+                                member.emit("NewHost", session.HostId);
+                            else
+                                member.emit("NewHost");
+                        }
+            
+                        console.log("All sessions has been informed.");
+                }
+                
+                //NOW WE DO A HACK DUE TO WEBRTC GOT A BUG THAT DO NOT FIRE PEER DISCONNECTION, SO WE ARE GOING TO IMPLEMENT THIS THRU HERE
+                
+                console.log("Informing peers socket is closed");
+                for(member in session.Members)
+                    member.emit("PeerClosure", clientId);
+                
+                console.log("All peers have been informed.");
+                
+                callback(true); //invoke the passed callback with a true flag
+            } else  //if some error ocurr while getting the client to disconnect,
+                callback(false); //invoke the passed callback with no args    
+            
+            
+            
+        });      
     };
 }
 
