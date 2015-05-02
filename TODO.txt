@@ -12,12 +12,12 @@ GENERAL TODO:
 
 SERVER TODO:
 
+-   Change mode to elect new host based on statistics
 -   If server crashes, for now, only clear session members
 -   Set timeout to answer error if took too long to get and address
 -   Every period, a "session garbage collector" will act to kill sessions not active for at least 1 day
 -   Sessions become not active after the last user disconnects
 -   Verify whether there is chance of two connections got the same id due to enter in the same in the db
--   If try to use a not implemented session id, return and error page instead try to connect
 -   At session join request, client will send its username, return the connection
 -   Check someway for have a public id and private id for security issues for client id
 -   Create system to store recently used connection ids to prevent them to be used
@@ -26,6 +26,7 @@ SERVER TODO:
 -   got to create a array of connected clients to manage them 
 -   Use english and portugueses words as address
 -   Maybe put qeek.me servers in more than one cloud
+-   Try find way to disacouple new host broadcast from idManager
 
 CLIENT TODO:
 
